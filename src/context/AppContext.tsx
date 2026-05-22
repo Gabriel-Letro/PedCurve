@@ -30,6 +30,10 @@ export interface Patient {
 interface AppContextType {
   patients: Patient[];
   addPatient: (patient: Omit<Patient, 'id' | 'accessCode' | 'consultations'>) => void;
+  addPatientWithConsultation: (
+    patient: Omit<Patient, 'id' | 'accessCode' | 'consultations'>,
+    consultation: Omit<Consultation, 'id'>
+  ) => void;
   getPatient: (id: string) => Patient | undefined;
   getPatientByAccessCode: (code: string) => Patient | undefined;
   addConsultation: (patientId: string, consultation: Omit<Consultation, 'id'>) => void;
@@ -158,6 +162,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
+  const addPatientWithConsultation = (
+    patientData: Omit<Patient, 'id' | 'accessCode' | 'consultations'>,
+    consultationData: Omit<Consultation, 'id'>
+  ) => {
+    setPatients((prev) => {
+      const newPatient: Patient = {
+        ...patientData,
+        id: uuidv4(),
+        accessCode: generateUniqueAccessCode(prev),
+        consultations: [{ ...consultationData, id: uuidv4() }],
+        status: 'active',
+      };
+      return [...prev, newPatient];
+    });
+  };
+
   const archivePatient = (patientId: string) => setStatus(patientId, 'inactive');
   const restorePatient = (patientId: string) => setStatus(patientId, 'active');
 
@@ -170,6 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       value={{
         patients,
         addPatient,
+        addPatientWithConsultation,
         getPatient,
         getPatientByAccessCode,
         addConsultation,

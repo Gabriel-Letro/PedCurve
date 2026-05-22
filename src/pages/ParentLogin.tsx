@@ -15,6 +15,7 @@ const ParentLogin: React.FC = () => {
     if (!code.trim()) return;
     const patient = getPatientByAccessCode(code.trim());
     if (patient) {
+      sessionStorage.setItem('@PedCurve:parentPatientId', patient.id);
       navigate(`/patient/${patient.id}?view=parent`);
     } else {
       setError('Código inválido. Verifique com o profissional de saúde.');

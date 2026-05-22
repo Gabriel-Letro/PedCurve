@@ -7,9 +7,7 @@ import {
   STANDARD_LABELS,
   type StandardKey,
 } from '../utils/curveStandards';
-import { buildTimeline } from '../utils/timeline';
 import GrowthChart from './GrowthChart';
-import ConsultationTimeline from './ConsultationTimeline';
 import Logo from './Logo';
 
 interface Props {
@@ -58,8 +56,6 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
         date: format(parseISO(c.date), 'dd/MM/yyyy'),
       };
     });
-
-  const timeline = buildTimeline(patient);
 
   const wfaDs = resolveStandard(standard, 'weight', patient.gender);
   const lhfaDs = resolveStandard(standard, 'height', patient.gender);
@@ -167,11 +163,6 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
           {hcDs && (
             <div className="print-section">
               <GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={headData} isGirl={isGirl} staticSize={CHART} />
-            </div>
-          )}
-          {timeline.length > 0 && (
-            <div className="print-section">
-              <ConsultationTimeline data={timeline} staticSize={CHART} />
             </div>
           )}
         </>

@@ -24,9 +24,7 @@ import { format, differenceInMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import GrowthChart from '../components/GrowthChart';
-import ConsultationTimeline from '../components/ConsultationTimeline';
 import PrintReport from '../components/PrintReport';
-import { buildTimeline } from '../utils/timeline';
 
 type TabKey = 'laudo' | 'grafico' | 'historico';
 
@@ -585,11 +583,6 @@ const PatientProfile: React.FC = () => {
             )}
           </div>
 
-          {patient.consultations.length > 0 && (
-            <div className="mt-6">
-              <ConsultationTimeline data={buildTimeline(patient)} />
-            </div>
-          )}
         </div>
       </div>
 

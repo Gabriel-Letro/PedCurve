@@ -1,86 +1,97 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Target, FileText, Users, Stethoscope, Heart } from 'lucide-react';
+import {
+  TrendingUp, Baby, Heart, Brain, AlertTriangle,
+  ArrowRight, Stethoscope, Shield, FileText
+} from 'lucide-react';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
+
+const CURVE_HIGHLIGHTS = [
+  { icon: <Baby size={18} />,          label: 'OMS 0–19 anos',        sub: 'Score Z',   color: '#22B6A8' },
+  { icon: <Heart size={18} />,         label: 'Síndrome de Down',     sub: 'Percentil', color: '#7C3AED' },
+  { icon: <Brain size={18} />,         label: 'Prematuros',           sub: 'Fenton / Intergrowth', color: '#0EA5E9' },
+  { icon: <AlertTriangle size={18} />, label: 'Turner / Williams',    sub: 'Percentil', color: '#F59E0B' },
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
-      {/* Brand */}
-      <div className="mb-6">
-        <Logo size={72} withWordmark tagline />
+    <div className="home-page">
+      {/* Top-right theme toggle */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+        <ThemeToggle />
       </div>
 
-      <h2
-        className="text-2xl font-semibold mb-3"
-        style={{ maxWidth: 560 }}
-      >
-        Acompanhe o crescimento infantil com{' '}
-        <span className="text-primary">precisão clínica</span>.
-      </h2>
-      <p
-        className="text-muted mb-8"
-        style={{ maxWidth: 520 }}
-      >
-        Plataforma para registro de consultas, geração automática de curvas de
-        crescimento (OMS), cálculo de escore-Z e percentis, e compartilhamento
-        seguro com os responsáveis.
-      </p>
+      {/* Hero */}
+      <div className="home-hero">
+        <Logo size={64} withWordmark tagline />
 
-      {/* CTAs */}
-      <div className="flex flex-col gap-3 w-full" style={{ maxWidth: 360 }}>
-        <button
-          className="btn btn-primary w-full"
-          style={{ padding: '1rem 1.25rem', fontSize: '1.05rem' }}
-          onClick={() => navigate('/login')}
-        >
-          <Stethoscope size={20} />
-          Sou Profissional de Saúde
-        </button>
-        <button
-          className="btn btn-secondary w-full"
-          style={{ padding: '1rem 1.25rem', fontSize: '1.05rem' }}
-          onClick={() => navigate('/parent')}
-        >
-          <Heart size={20} />
-          Sou Responsável
-        </button>
+        <h2 className="home-headline">
+          Curvas de crescimento com{' '}
+          <span className="text-primary">precisão clínica</span>
+        </h2>
+        <p className="home-sub">
+          Plataforma para profissionais de saúde gerarem curvas de crescimento
+          individualizadas conforme o perfil clínico do paciente, com
+          Score&nbsp;Z ou Percentil na referência correta.
+        </p>
+
+        {/* CTAs */}
+        <div className="home-cta-row">
+          <button
+            className="btn btn-primary home-cta-primary"
+            onClick={() => navigate('/login')}
+          >
+            <Stethoscope size={20} />
+            Acesso Profissional
+            <ArrowRight size={16} />
+          </button>
+          <button
+            className="btn btn-primary home-cta-primary home-cta-parent"
+            onClick={() => navigate('/parent')}
+          >
+            <Shield size={20} />
+            Acesso do Responsável
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        {/* Curve type chips — decorative preview */}
+        <div className="home-type-chips">
+          {CURVE_HIGHLIGHTS.map((t) => (
+            <div
+              key={t.label}
+              className="home-type-chip"
+              style={{ '--chip-color': t.color } as React.CSSProperties}
+            >
+              <span style={{ color: t.color }}>{t.icon}</span>
+              <span className="chip-label">{t.label}</span>
+              <span className="chip-sub">{t.sub}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Feature row */}
-      <div
-        className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 w-full"
-        style={{ maxWidth: 760 }}
-      >
-        <FeatureBadge icon={<LineChart size={22} />} label="Gráficos automáticos" />
-        <FeatureBadge icon={<Users size={22} />} label="Acompanhamento evolutivo" />
-        <FeatureBadge icon={<Target size={22} />} label="Percentis e escore-Z" />
-        <FeatureBadge icon={<FileText size={22} />} label="Relatórios profissionais" />
+      {/* Feature strip */}
+      <div className="home-features">
+        <Feature icon={<TrendingUp size={20} />} label="Score Z e Percentil" desc="Cálculo automático conforme a curva selecionada" />
+        <Feature icon={<FileText size={20} />} label="Interpretação clínica" desc="Resultado com alerta visual e texto interpretativo" />
+        <Feature icon={<Shield size={20} />} label="Curvas validadas" desc="OMS, Fenton, Mustacchi, Turner, Williams-Beuren" />
+        <Feature icon={<Baby size={20} />} label="Populações especiais" desc="Prematuros, síndromes e acondroplasia" />
       </div>
     </div>
   );
 };
 
-const FeatureBadge: React.FC<{ icon: React.ReactNode; label: string }> = ({
-  icon,
-  label,
-}) => (
-  <div className="flex flex-col items-center text-center gap-2">
-    <div
-      className="flex items-center justify-center"
-      style={{
-        width: 52,
-        height: 52,
-        borderRadius: 14,
-        background: 'rgba(34, 182, 168, 0.12)',
-        color: 'var(--color-primary)',
-      }}
-    >
-      {icon}
+const Feature: React.FC<{ icon: React.ReactNode; label: string; desc: string }> = ({ icon, label, desc }) => (
+  <div className="home-feature">
+    <div className="home-feature-icon">{icon}</div>
+    <div>
+      <div className="home-feature-label">{label}</div>
+      <div className="home-feature-desc">{desc}</div>
     </div>
-    <span className="text-xs font-medium text-dark">{label}</span>
   </div>
 );
 

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  TrendingUp,
   Plus,
   Users,
   Search,
@@ -16,6 +17,7 @@ import {
 import { useAppContext } from '../context/AppContext';
 import type { Gender } from '../context/AppContext';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface ConfirmConfig {
   title: string;
@@ -158,6 +160,7 @@ const Dashboard: React.FC = () => {
       confirmLabel: 'Sair',
       onConfirm: () => {
         setConfirm(null);
+        sessionStorage.removeItem('@PedCurve:prof');
         navigate('/');
       },
     });
@@ -196,9 +199,13 @@ const Dashboard: React.FC = () => {
       <header className="page-header">
         <Logo size={36} withWordmark />
         <div className="flex items-center gap-2">
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <button className="btn btn-outline" onClick={() => setShowModal(true)}>
             <Plus size={18} /> Novo Paciente
           </button>
+          <button className="btn btn-primary" onClick={() => navigate('/generator')}>
+            <TrendingUp size={18} /> Gerar Curva
+          </button>
+          <ThemeToggle />
           <button className="btn btn-ghost" title="Sair" onClick={requestLogout}>
             <LogOut size={18} />
           </button>

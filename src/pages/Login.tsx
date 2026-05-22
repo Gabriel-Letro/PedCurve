@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Stethoscope } from 'lucide-react';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -10,8 +11,8 @@ const Login: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login — accepts any non-empty credentials.
     if (email && password) {
+      sessionStorage.setItem('@PedCurve:prof', '1');
       navigate('/dashboard');
     }
   };
@@ -19,13 +20,16 @@ const Login: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
       <div className="w-full max-w-md card">
-        <button
-          onClick={() => navigate('/')}
-          className="btn btn-ghost"
-          style={{ background: 'transparent', padding: 0, marginBottom: '1.25rem' }}
-        >
-          <ArrowLeft size={18} /> Voltar
-        </button>
+        <div className="flex items-center justify-between" style={{ marginBottom: '1.25rem' }}>
+          <button
+            onClick={() => navigate('/')}
+            className="btn btn-ghost"
+            style={{ background: 'transparent', padding: 0 }}
+          >
+            <ArrowLeft size={18} /> Voltar
+          </button>
+          <ThemeToggle />
+        </div>
 
         <div className="text-center mb-6">
           <div style={{ display: 'inline-flex' }}>

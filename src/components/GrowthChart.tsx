@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 import type { ReferenceRow } from '../utils/curveStandards';
 
@@ -23,24 +22,10 @@ interface GrowthChartProps {
   patientData: PatientDataPoint[];
   yAxisLabel: string;
   isGirl?: boolean;
-  /** Optional small caption shown in the chart header (e.g. standard label) */
   caption?: string;
-  /**
-   * When provided, the chart renders at a fixed pixel size instead of using
-   * ResponsiveContainer. This is essential for print/PDF: ResponsiveContainer
-   * relies on a ResizeObserver and reports 0x0 inside hidden/print containers,
-   * producing blank charts. A fixed size always renders real SVG.
-   */
   staticSize?: { width: number; height: number };
 }
 
-/**
- * WHO/CDC-style growth-curve chart.
- *
- * Renders 5 percentile bands (P3 / P15 / P50 / P85 / P97) derived from the
- * SD reference lines, plus the patient's longitudinal data line in the
- * coral brand accent.
- */
 const GrowthChart: React.FC<GrowthChartProps> = ({
   title,
   referenceData,
@@ -50,7 +35,7 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
   caption,
   staticSize,
 }) => {
-  const { mergedData, percentileColor } = useMemo(() => {
+  const { mergedData, zColor } = useMemo(() => {
     const refByMonth: Record<number, any> = {};
 
     for (const d of referenceData) {
@@ -58,11 +43,13 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
       if (Number.isNaN(month)) continue;
       refByMonth[month] = {
         month,
-        P3: Number(d.SD2neg),
-        P15: Number(d.SD1neg),
-        P50: Number(d.SD0),
-        P85: Number(d.SD1),
-        P97: Number(d.SD2),
+        z_m3: d.SD3neg !== undefined ? Number(d.SD3neg) : undefined,
+        z_m2: d.SD2neg !== undefined ? Number(d.SD2neg) : undefined,
+        z_m1: d.SD1neg !== undefined ? Number(d.SD1neg) : undefined,
+        z_0:  d.SD0   !== undefined ? Number(d.SD0)   : undefined,
+        z_p1: d.SD1   !== undefined ? Number(d.SD1)   : undefined,
+        z_p2: d.SD2   !== undefined ? Number(d.SD2)   : undefined,
+        z_p3: d.SD3   !== undefined ? Number(d.SD3)   : undefined,
       };
     }
 
@@ -77,107 +64,124 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
       (a: any, b: any) => a.month - b.month
     );
     const color = isGirl ? '#f472b6' : '#38bdf8';
-    return { mergedData: merged, percentileColor: color };
+    return { mergedData: merged, zColor: color };
   }, [referenceData, patientData, isGirl]);
 
   const unit = yAxisLabel.includes('(')
     ? yAxisLabel.split('(')[1]?.replace(')', '')
     : '';
 
-  // Chart body factored out so on-screen (responsive) and print (static)
-  // renders share identical configuration.
-  const renderChart = (extra: { width?: number; height?: number }) => (
-    <ComposedChart
-      {...extra}
-      data={mergedData as any[]}
-      margin={{ top: 8, right: 20, bottom: 36, left: 8 }}
-    >
-      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-      <XAxis
-        dataKey="month"
-        type="number"
-        domain={['dataMin', 'dataMax']}
-        height={48}
-        tick={{ fontSize: 11, fill: '#6B7280' }}
-        label={{
-          value: 'Idade (meses)',
-          position: 'insideBottom',
-          offset: 0,
-          fill: '#6B7280',
-          fontSize: 12,
-        }}
-      />
-      <YAxis
-        tick={{ fontSize: 11, fill: '#6B7280' }}
-        label={{
-          value: yAxisLabel,
-          angle: -90,
-          position: 'insideLeft',
-          offset: 10,
-          fill: '#6B7280',
-          fontSize: 12,
-        }}
-      />
-      <Tooltip
-        cursor={{ strokeDasharray: '3 3' }}
-        contentStyle={{
-          background: 'white',
-          border: '1px solid #E5E7EB',
-          borderRadius: 12,
-          boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)',
-          fontSize: 12,
-        }}
-        labelFormatter={(month) => `${month} meses`}
-        formatter={(value: any, name: any, ctx: any) => {
-          if (name === 'Paciente') {
-            const date = ctx?.payload?.patientDate;
-            return [`${value} ${unit}${date ? ` • ${date}` : ''}`, 'Paciente'];
-          }
-          return [`${value}`, name];
-        }}
-      />
-      {/* Legend pinned to the TOP so it never overlaps the bottom
-          "Idade (meses)" axis label. */}
-      <Legend
-        verticalAlign="top"
-        align="center"
-        height={32}
-        iconType="line"
-        wrapperStyle={{ fontSize: 11, paddingBottom: 6 }}
-      />
+  const renderChart = (extra: { width?: number; height?: number }) => {
+    const lastIdx = mergedData.length - 1;
 
-      {/* Reference percentile curves */}
-      <Line name="P97" type="monotone" dataKey="P97" stroke={percentileColor} strokeWidth={1} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
-      <Line name="P85" type="monotone" dataKey="P85" stroke={percentileColor} strokeWidth={1} strokeOpacity={0.7} dot={false} isAnimationActive={false} />
-      <Line name="P50" type="monotone" dataKey="P50" stroke={percentileColor} strokeWidth={2.2} dot={false} isAnimationActive={false} />
-      <Line name="P15" type="monotone" dataKey="P15" stroke={percentileColor} strokeWidth={1} strokeOpacity={0.7} dot={false} isAnimationActive={false} />
-      <Line name="P3" type="monotone" dataKey="P3" stroke={percentileColor} strokeWidth={1} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
+    // Returns a dot renderer that draws a text label only at the last data point.
+    const endLabel = (label: string, color: string, opacity = 1) =>
+      (props: any) => {
+        const { cx, cy, index } = props;
+        if (index !== lastIdx || cx == null || cy == null) return <g key={`z-${index}-${label}`} />;
+        return (
+          <text
+            key={`z-${index}-${label}`}
+            x={cx + 5}
+            y={cy + 1}
+            fill={color}
+            fontSize={9.5}
+            fontWeight={700}
+            dominantBaseline="middle"
+            opacity={opacity}
+          >
+            {label}
+          </text>
+        );
+      };
 
-      {/* Patient measurements line */}
-      <Line
-        name="Paciente"
-        type="monotone"
-        dataKey="patient"
-        stroke="#FF8B8B"
-        strokeWidth={2.5}
-        dot={{ r: 5, fill: '#FF8B8B', stroke: 'white', strokeWidth: 1.5 }}
-        connectNulls
-        isAnimationActive={false}
-      />
-    </ComposedChart>
-  );
+    return (
+      <ComposedChart
+        {...extra}
+        data={mergedData as any[]}
+        margin={{ top: 8, right: 48, bottom: 36, left: 8 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+        <XAxis
+          dataKey="month"
+          type="number"
+          domain={['dataMin', 'dataMax']}
+          height={48}
+          tick={{ fontSize: 11, fill: '#6B7280' }}
+          label={{
+            value: 'Idade (meses)',
+            position: 'insideBottom',
+            offset: 0,
+            fill: '#6B7280',
+            fontSize: 12,
+          }}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: '#6B7280' }}
+          label={{
+            value: yAxisLabel,
+            angle: -90,
+            position: 'insideLeft',
+            offset: 10,
+            fill: '#6B7280',
+            fontSize: 12,
+          }}
+        />
+        <Tooltip
+          cursor={{ strokeDasharray: '3 3' }}
+          contentStyle={{
+            background: 'white',
+            border: '1px solid #E5E7EB',
+            borderRadius: 12,
+            boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)',
+            fontSize: 12,
+          }}
+          labelFormatter={(month) => `${month} meses`}
+          formatter={(value: any, name: any, ctx: any) => {
+            if (name === 'Paciente') {
+              const date = ctx?.payload?.patientDate;
+              return [`${value} ${unit}${date ? ` • ${date}` : ''}`, 'Paciente'];
+            }
+            return [`${value}`, name];
+          }}
+        />
+
+        {/* Reference Z-score curves — labels appear at the end of each line */}
+        <Line name="Z = -3" type="monotone" dataKey="z_m3" stroke={zColor} strokeWidth={1}   strokeDasharray="3 4" strokeOpacity={0.5}  dot={endLabel('Z-3', zColor, 0.55)} isAnimationActive={false} />
+        <Line name="Z = -2" type="monotone" dataKey="z_m2" stroke={zColor} strokeWidth={1.5} strokeDasharray="5 3" dot={endLabel('Z-2', zColor)} isAnimationActive={false} />
+        <Line name="Z = -1" type="monotone" dataKey="z_m1" stroke={zColor} strokeWidth={1}   strokeOpacity={0.75} dot={endLabel('Z-1', zColor, 0.75)} isAnimationActive={false} />
+        <Line name="Z = 0"  type="monotone" dataKey="z_0"  stroke={zColor} strokeWidth={2.5} dot={endLabel('Z 0', zColor)} isAnimationActive={false} />
+        <Line name="Z = +1" type="monotone" dataKey="z_p1" stroke={zColor} strokeWidth={1}   strokeOpacity={0.75} dot={endLabel('Z+1', zColor, 0.75)} isAnimationActive={false} />
+        <Line name="Z = +2" type="monotone" dataKey="z_p2" stroke={zColor} strokeWidth={1.5} strokeDasharray="5 3" dot={endLabel('Z+2', zColor)} isAnimationActive={false} />
+        <Line name="Z = +3" type="monotone" dataKey="z_p3" stroke={zColor} strokeWidth={1}   strokeDasharray="3 4" strokeOpacity={0.5}  dot={endLabel('Z+3', zColor, 0.55)} isAnimationActive={false} />
+
+        {/* Patient measurements line */}
+        <Line
+          name="Paciente"
+          type="monotone"
+          dataKey="patient"
+          stroke="#FF8B8B"
+          strokeWidth={2.5}
+          dot={{ r: 5, fill: '#FF8B8B', stroke: 'white', strokeWidth: 1.5 }}
+          connectNulls
+          isAnimationActive={false}
+        />
+      </ComposedChart>
+    );
+  };
 
   return (
     <div className="card w-full">
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div>
-          <h3 className="text-lg font-bold text-dark">{title}</h3>
-          {caption && <p className="text-xs text-muted mt-1">{caption}</p>}
+      {(title || caption) && (
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div>
+            {title && <h3 className="text-lg font-bold text-dark">{title}</h3>}
+            {caption && <p className="text-xs text-muted mt-1">{caption}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       {staticSize ? (
-        // Fixed-size render for print/PDF (always produces real SVG).
         <div style={{ width: staticSize.width, height: staticSize.height }}>
           {renderChart({ width: staticSize.width, height: staticSize.height })}
         </div>
