@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useParams } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useSearchParams, useParams } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import ParentLogin from './pages/ParentLogin';
@@ -30,7 +30,7 @@ function PatientProfileRoute() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -40,7 +40,7 @@ function App() {
         <Route path="/patient/:id" element={<PatientProfileRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

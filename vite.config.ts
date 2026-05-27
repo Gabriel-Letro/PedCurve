@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/PedCurve/',
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +18,8 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait-primary',
         lang: 'pt-BR',
-        start_url: '/',
-        scope: '/',
+        start_url: '/PedCurve/',
+        scope: '/PedCurve/',
         icons: [
           {
             src: 'favicon.svg',
