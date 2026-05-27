@@ -1,16 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Baby, Brain, AlertTriangle, Heart,
-  ChevronRight, CheckCircle, BarChart2, BookOpen, Save, Users, Info
+  ChevronRight, CheckCircle, XCircle, BarChart2, BookOpen, Save, Users, Info, Bone
 } from 'lucide-react';
 import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceDot, Label
 } from 'recharts';
 
-import ThemeToggle from '../components/ThemeToggle';
-import GrowthChart from '../components/GrowthChart';
+import GrowthChart, { type ChartDisplayMode } from '../components/GrowthChart';
+import { useTheme } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import { resolveStandard } from '../utils/curveStandards';
 import type { PatientType, CurveKey, Gender, Indicator, GeneratorResult, IndicatorResult } from '../types/curveGenerator';
@@ -60,6 +59,13 @@ const PATIENT_TYPES: { key: PatientType; label: string; sub: string; icon: React
     sub: 'Curvas específicas — Percentil',
     icon: <Heart size={28} />,
     color: '#EC4899',
+  },
+  {
+    key: 'achondro',
+    label: 'Acondroplasia',
+    sub: 'Curvas Clarity/Horton — Percentil',
+    icon: <Bone size={28} />,
+    color: '#8B5CF6',
   },
 ];
 
@@ -112,7 +118,7 @@ function CurveSelectionStep({
   return (
     <div className="gen-step">
       <div className="gen-step-header">
-        <button className="gen-back-btn" onClick={onBack}>
+        <button className="gen-back-btn" onClick={onBack} aria-label="Voltar ao passo anterior">
           <ArrowLeft size={16} /> Voltar
         </button>
         <h2 className="gen-step-title">Selecione a Curva de Crescimento</h2>
@@ -256,7 +262,7 @@ function DataEntryStep({
   return (
     <div className="gen-step">
       <div className="gen-step-header">
-        <button className="gen-back-btn" onClick={onBack}>
+        <button className="gen-back-btn" onClick={onBack} aria-label="Voltar ao passo anterior">
           <ArrowLeft size={16} /> Voltar
         </button>
         <h2 className="gen-step-title">Inserir Dados Antropométricos</h2>
@@ -385,6 +391,7 @@ function ResultsStep({
   const [saveMode, setSaveMode] = useState<'existing' | 'new'>('existing');
   const [saveDate, setSaveDate] = useState(new Date().toISOString().split('T')[0]);
   const [saveDone, setSaveDone] = useState(false);
+  const [chartDisplayMode, setChartDisplayMode] = useState<ChartDisplayMode>('zscore');
 
   // Existing patient mode
   const [savePatientId, setSavePatientId] = useState('');
@@ -396,7 +403,12 @@ function ResultsStep({
   const [newParentName, setNewParentName] = useState('');
   const [newFormError, setNewFormError] = useState('');
 
+  // Shared: clinical notes
+  const [saveNotes, setSaveNotes] = useState('');
+
   const curveDef = getCurveDefinition(result.curveKey);
+  // Curves with outputMode 'zscore' support both display modes; percentile-only curves don't have Z-Score data
+  const supportsZScore = curveDef?.outputMode === 'zscore';
 
   const worstStatus = result.indicators.reduce<'normal' | 'warning' | 'danger'>((worst, r) => {
     if (r.status === 'danger') return 'danger';
@@ -414,7 +426,7 @@ function ResultsStep({
     const w = result.indicators.find((i) => i.indicator === 'weight')?.value;
     const h = result.indicators.find((i) => i.indicator === 'height')?.value;
     const hc = result.indicators.find((i) => i.indicator === 'headCirc')?.value;
-    return { date: saveDate, weight: w, height: h, headCirc: hc };
+    return { date: saveDate, weight: w, height: h, headCirc: hc, notes: saveNotes.trim() || undefined };
   };
 
   const handleSaveExisting = () => {
@@ -442,10 +454,21 @@ function ResultsStep({
     setShowSaveModal(false);
   };
 
+  const computeBirthDate = (): string => {
+    const base = new Date(saveDate + 'T00:00:00');
+    if (result.gestationalAgeWeeks !== undefined) {
+      base.setDate(base.getDate() - Math.round(result.gestationalAgeWeeks * 7));
+    } else {
+      base.setMonth(base.getMonth() - result.ageMonths);
+    }
+    return base.toISOString().split('T')[0];
+  };
+
   const openModal = () => {
     setSaveMode('existing');
     setSavePatientId('');
-    setNewName(''); setNewBirthDate(''); setNewGender(result.gender); setNewParentName(''); setNewFormError('');
+    setNewName(''); setNewBirthDate(computeBirthDate()); setNewGender(result.gender); setNewParentName(''); setNewFormError('');
+    setSaveNotes('');
     setShowSaveModal(true);
   };
 
@@ -480,6 +503,54 @@ function ResultsStep({
         </div>
       )}
 
+      {/* Chart display mode toggle */}
+      <div className="flex items-center gap-2 mb-2" style={{ flexWrap: 'wrap' }}>
+        <span className="text-xs text-muted font-semibold uppercase tracking-wider">Exibir curvas em:</span>
+        <div style={{ display: 'flex', background: 'var(--color-gray-100)', borderRadius: 8, padding: 3, gap: 2, border: '1px solid var(--color-gray-200)' }}>
+          <button
+            onClick={() => supportsZScore && setChartDisplayMode('zscore')}
+            title={!supportsZScore ? 'Escore-Z não disponível para esta curva de referência' : undefined}
+            style={{
+              padding: '0.3rem 0.75rem',
+              borderRadius: 6,
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              border: 'none',
+              cursor: supportsZScore ? 'pointer' : 'not-allowed',
+              transition: 'all 0.15s',
+              background: chartDisplayMode === 'zscore' && supportsZScore ? 'var(--color-primary)' : 'transparent',
+              color: !supportsZScore
+                ? 'var(--color-text-muted)'
+                : chartDisplayMode === 'zscore' ? '#fff' : 'var(--color-text-muted)',
+              opacity: !supportsZScore ? 0.45 : 1,
+            }}
+          >
+            Escore-Z
+          </button>
+          <button
+            onClick={() => setChartDisplayMode('percentile')}
+            style={{
+              padding: '0.3rem 0.75rem',
+              borderRadius: 6,
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              background: chartDisplayMode === 'percentile' || !supportsZScore ? 'var(--color-primary)' : 'transparent',
+              color: chartDisplayMode === 'percentile' || !supportsZScore ? '#fff' : 'var(--color-text-muted)',
+            }}
+          >
+            Percentil
+          </button>
+        </div>
+        {!supportsZScore && (
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-warning-cl)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Escore-Z não disponível para esta curva de referência
+          </span>
+        )}
+      </div>
+
       {/* Stacked indicator cards — each with chart + info */}
       <div className="flex flex-col gap-6" style={{ marginBottom: '1.5rem' }}>
         {result.indicators.map((indicResult) => (
@@ -488,6 +559,7 @@ function ResultsStep({
             indicResult={indicResult}
             result={result}
             curveDef={curveDef}
+            displayMode={!supportsZScore ? 'percentile' : chartDisplayMode}
           />
         ))}
       </div>
@@ -517,7 +589,7 @@ function ResultsStep({
         <button className="btn btn-outline" onClick={onBack}>Corrigir dados</button>
         {!saveDone && (
           <button className="btn btn-secondary" onClick={openModal}>
-            <Save size={16} /> Salvar no Paciente
+            <Save size={16} /> Salvar Paciente
           </button>
         )}
         <button className="btn btn-ghost" onClick={() => window.print()}>Imprimir</button>
@@ -560,6 +632,18 @@ function ResultsStep({
                 value={saveDate}
                 onChange={(e) => setSaveDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            {/* Shared: clinical notes */}
+            <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+              <label>Observações clínicas <span style={{ fontWeight: 400, color: 'var(--color-text-muted)', fontSize: '0.8em' }}>(opcional)</span></label>
+              <textarea
+                placeholder="Ex: sem intercorrências, aleitamento materno exclusivo..."
+                value={saveNotes}
+                onChange={(e) => setSaveNotes(e.target.value)}
+                rows={2}
+                style={{ resize: 'vertical', minHeight: 56, fontFamily: 'inherit', fontSize: '0.875rem' }}
               />
             </div>
 
@@ -654,10 +738,12 @@ function IndicatorCard({
   indicResult,
   result,
   curveDef,
+  displayMode,
 }: {
   indicResult: IndicatorResult;
   result: GeneratorResult;
   curveDef: CurveDefinition | undefined;
+  displayMode: ChartDisplayMode;
 }) {
   const cfg = STATUS_CONFIG[indicResult.status];
 
@@ -681,13 +767,18 @@ function IndicatorCard({
               P{Math.round(indicResult.result)}
             </span>
           )}
-          <span className={`status-chip ${indicResult.status}`}>{cfg.label}</span>
+          <span className={`status-chip ${indicResult.status}`} style={{ gap: 4 }}>
+            {indicResult.status === 'normal'  && <CheckCircle size={10} />}
+            {indicResult.status === 'warning' && <AlertTriangle size={10} />}
+            {indicResult.status === 'danger'  && <XCircle size={10} />}
+            {cfg.label}
+          </span>
         </div>
       </div>
 
       {/* Chart */}
       <div style={{ padding: '0 1.25rem' }}>
-        <IndicatorChart indicResult={indicResult} result={result} curveDef={curveDef} />
+        <IndicatorChart indicResult={indicResult} result={result} curveDef={curveDef} displayMode={displayMode} />
       </div>
 
       {/* Interpretation */}
@@ -705,23 +796,28 @@ function IndicatorChart({
   indicResult,
   result,
   curveDef,
+  displayMode,
 }: {
   indicResult: IndicatorResult;
   result: GeneratorResult;
   curveDef: CurveDefinition | undefined;
+  displayMode: ChartDisplayMode;
 }) {
   const isFenton = result.curveKey === 'fenton' || result.curveKey === 'intergrowth';
 
+  // Premature curves (Fenton / Intergrowth): always Percentile
   if (isFenton && (indicResult.indicator === 'weight' || indicResult.indicator === 'height' || indicResult.indicator === 'headCirc')) {
     return <FentonChart gender={result.gender} indicator={indicResult.indicator} week={result.gestationalAgeWeeks ?? 40} patientValue={indicResult.value} />;
   }
 
+  // WHO/CDC curves: support both Z-Score and Percentile modes
   if (curveDef?.outputMode === 'zscore') {
     const standard = result.ageMonths <= 60 ? 'who' : 'cdc';
     const ds = resolveStandard(standard, indicResult.indicator, result.gender);
     if (!ds) return <div className="chart-no-data">Dados gráficos não disponíveis para esta faixa etária</div>;
     const patientPt = [{ months: result.ageMonths, value: indicResult.value, date: result.generatedAt }];
-    const caption = `OMS${standard === 'cdc' ? '/CDC' : ''} • ${result.gender === 'M' ? 'meninos' : 'meninas'} • Score Z`;
+    const modeLabel = displayMode === 'zscore' ? 'Score Z' : 'Percentil';
+    const caption = `OMS${standard === 'cdc' ? '/CDC' : ''} • ${result.gender === 'M' ? 'meninos' : 'meninas'} • ${modeLabel}`;
     return (
       <GrowthChart
         title=""
@@ -730,10 +826,12 @@ function IndicatorChart({
         patientData={patientPt}
         isGirl={result.gender === 'F'}
         caption={caption}
+        displayMode={displayMode}
       />
     );
   }
 
+  // Percentile-only curves (Down, Turner, Williams, Achondro): always Percentile
   return (
     <PercentileChartComp
       curveKey={result.curveKey}
@@ -750,6 +848,15 @@ function PercentileChartComp({
 }: {
   curveKey: CurveKey; gender: Gender; indicator: Indicator; age: number; patientValue: number;
 }) {
+  const { theme } = useTheme();
+  const isDark     = theme === 'dark';
+  const gridColor  = isDark ? '#243240' : '#f0f0f0';
+  const tickColor  = isDark ? '#8fa0ae' : '#6B7280';
+  const chartBg    = isDark ? '#1a2a35' : '#ffffff';
+  const tooltipBg  = isDark ? '#1e2d38' : '#ffffff';
+  const tooltipBdr = isDark ? '#2d3d4a' : '#E5E7EB';
+  const tooltipClr = isDark ? '#e2e8f0' : '#1B3A4B';
+
   const data = getPercentileChartData(curveKey, gender, indicator);
   if (!data || data.length === 0) return <div className="chart-no-data">Dados gráficos não disponíveis</div>;
 
@@ -763,15 +870,15 @@ function PercentileChartComp({
   }));
 
   return (
-    <div className="gen-chart-wrap">
+    <div className="gen-chart-wrap" style={{ background: chartBg, borderRadius: 8, padding: '0.5rem 0' }}>
       <ResponsiveContainer width="100%" height={340}>
-        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="age" tick={{ fontSize: 11 }}>
-            <Label value="Idade (meses)" offset={-8} position="insideBottom" style={{ fontSize: 11 }} />
+        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }} style={{ background: chartBg }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <XAxis dataKey="age" tick={{ fontSize: 11, fill: tickColor }}>
+            <Label value="Idade (meses)" offset={-8} position="insideBottom" style={{ fontSize: 11, fill: tickColor }} />
           </XAxis>
-          <YAxis tick={{ fontSize: 11 }}>
-            <Label value={`${INDICATOR_LABELS[indicator]} (${unit})`} angle={-90} position="insideLeft" style={{ fontSize: 11 }} />
+          <YAxis tick={{ fontSize: 11, fill: tickColor }}>
+            <Label value={`${INDICATOR_LABELS[indicator]} (${unit})`} angle={-90} position="insideLeft" style={{ fontSize: 11, fill: tickColor }} />
           </YAxis>
           <Tooltip
             formatter={(v: any) => {
@@ -779,6 +886,7 @@ function PercentileChartComp({
               return `${(v as number).toFixed(1)} ${unit}`;
             }}
             labelFormatter={(l) => `Idade: ${l} meses`}
+            contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBdr}`, borderRadius: 8, fontSize: 12, color: tooltipClr }}
           />
           <Area dataKey="P3_P97"  name="P3–P97"  fill="#22B6A8" fillOpacity={0.07} stroke="none" />
           <Area dataKey="P10_P90" name="P10–P90" fill="#22B6A8" fillOpacity={0.09} stroke="none" />
@@ -787,7 +895,7 @@ function PercentileChartComp({
           <ReferenceDot x={age} y={patientValue} r={7} fill="#FF8B8B" stroke="#fff" strokeWidth={2} />
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="chart-legend-note">Faixa: P3–P97 · Linha central: P50 (mediana) · Ponto vermelho: paciente</p>
+      <p className="chart-legend-note" style={{ color: tickColor }}>Faixa: P3–P97 · Linha central: P50 (mediana) · Ponto vermelho: paciente</p>
     </div>
   );
 }
@@ -797,20 +905,29 @@ function FentonChart({
 }: {
   gender: Gender; indicator: 'weight' | 'height' | 'headCirc'; week: number; patientValue: number;
 }) {
+  const { theme } = useTheme();
+  const isDark     = theme === 'dark';
+  const gridColor  = isDark ? '#243240' : '#f0f0f0';
+  const tickColor  = isDark ? '#8fa0ae' : '#6B7280';
+  const chartBg    = isDark ? '#1a2a35' : '#ffffff';
+  const tooltipBg  = isDark ? '#1e2d38' : '#ffffff';
+  const tooltipBdr = isDark ? '#2d3d4a' : '#E5E7EB';
+  const tooltipClr = isDark ? '#e2e8f0' : '#1B3A4B';
+
   const data = getFentonChartData(gender, indicator);
   const unit = INDICATOR_UNITS[indicator];
   const chartData = data.map((r) => ({ week: r.week, P3_P97: [r.P3, r.P97], P10_P90: [r.P10, r.P90], P50: r.P50 }));
 
   return (
-    <div className="gen-chart-wrap">
+    <div className="gen-chart-wrap" style={{ background: chartBg, borderRadius: 8, padding: '0.5rem 0' }}>
       <ResponsiveContainer width="100%" height={340}>
-        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="week" tick={{ fontSize: 11 }}>
-            <Label value="Semana gestacional" offset={-8} position="insideBottom" style={{ fontSize: 11 }} />
+        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }} style={{ background: chartBg }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <XAxis dataKey="week" tick={{ fontSize: 11, fill: tickColor }}>
+            <Label value="Semana gestacional" offset={-8} position="insideBottom" style={{ fontSize: 11, fill: tickColor }} />
           </XAxis>
-          <YAxis tick={{ fontSize: 11 }}>
-            <Label value={`${INDICATOR_LABELS[indicator]} (${unit})`} angle={-90} position="insideLeft" style={{ fontSize: 11 }} />
+          <YAxis tick={{ fontSize: 11, fill: tickColor }}>
+            <Label value={`${INDICATOR_LABELS[indicator]} (${unit})`} angle={-90} position="insideLeft" style={{ fontSize: 11, fill: tickColor }} />
           </YAxis>
           <Tooltip
             formatter={(v: any) => {
@@ -818,6 +935,7 @@ function FentonChart({
               return `${(v as number).toFixed(2)} ${unit}`;
             }}
             labelFormatter={(l) => `Semana: ${l}`}
+            contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBdr}`, borderRadius: 8, fontSize: 12, color: tooltipClr }}
           />
           <Area dataKey="P3_P97"  name="P3–P97"  fill="#0EA5E9" fillOpacity={0.07} stroke="none" />
           <Area dataKey="P10_P90" name="P10–P90" fill="#0EA5E9" fillOpacity={0.12} stroke="none" />
@@ -825,7 +943,7 @@ function FentonChart({
           <ReferenceDot x={week} y={patientValue} r={7} fill="#FF8B8B" stroke="#fff" strokeWidth={2} />
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="chart-legend-note">Fenton 2013 · Faixa: P3–P97 · Ponto vermelho: paciente</p>
+      <p className="chart-legend-note" style={{ color: tickColor }}>Fenton 2013 · Faixa: P3–P97 · Ponto vermelho: paciente</p>
     </div>
   );
 }
@@ -867,7 +985,6 @@ function formatAgeMonths(months: number): string {
 }
 
 export default function CurveGenerator() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [patientType, setPatientType] = useState<PatientType | null>(null);
   const [selectedCurve, setSelectedCurve] = useState<CurveDefinition | null>(null);
@@ -930,41 +1047,41 @@ export default function CurveGenerator() {
   }, []);
 
   return (
-    <div className="gen-container">
-      <div className="gen-topbar">
-        <button className="gen-back-btn" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={16} /> Painel
-        </button>
-        <h1 className="gen-main-title">Gerador de Curvas de Crescimento</h1>
-        <ThemeToggle />
+    <>
+      <div className="shell-topbar">
+        <span className="shell-topbar-title">Gerador de Curvas de Crescimento</span>
       </div>
 
-      <StepProgress current={step} />
+      <div className="shell-content-inner">
+        <div className="gen-container">
+          <StepProgress current={step} />
 
-      <div className="gen-content">
-        {step === 0 && <PatientTypeStep onSelect={handleTypeSelect} />}
-        {step === 1 && patientType && (
-          <CurveSelectionStep
-            patientType={patientType}
-            onSelect={handleCurveSelect}
-            onBack={() => setStep(0)}
-          />
-        )}
-        {step === 2 && selectedCurve && (
-          <DataEntryStep
-            curve={selectedCurve}
-            onSubmit={handleFormSubmit}
-            onBack={() => setStep(1)}
-          />
-        )}
-        {step === 3 && result && (
-          <ResultsStep
-            result={result}
-            onRestart={handleRestart}
-            onBack={() => setStep(2)}
-          />
-        )}
+          <div className="gen-content">
+            {step === 0 && <PatientTypeStep onSelect={handleTypeSelect} />}
+            {step === 1 && patientType && (
+              <CurveSelectionStep
+                patientType={patientType}
+                onSelect={handleCurveSelect}
+                onBack={() => setStep(0)}
+              />
+            )}
+            {step === 2 && selectedCurve && (
+              <DataEntryStep
+                curve={selectedCurve}
+                onSubmit={handleFormSubmit}
+                onBack={() => setStep(1)}
+              />
+            )}
+            {step === 3 && result && (
+              <ResultsStep
+                result={result}
+                onRestart={handleRestart}
+                onBack={() => setStep(2)}
+              />
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

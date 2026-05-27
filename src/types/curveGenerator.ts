@@ -3,7 +3,8 @@ export type PatientType =
   | 'down'       // Síndrome de Down → Curvas Brasileiras (Percentil)
   | 'premature'  // Prematuros → Intergrowth/Fenton
   | 'turner'     // Síndrome de Turner
-  | 'williams';  // Síndrome de Williams-Beuren
+  | 'williams'   // Síndrome de Williams-Beuren
+  | 'achondro';  // Acondroplasia → Clarity/Horton (Percentil)
 
 export type CurveKey =
   | 'who_0_5'       // OMS 0-5 anos

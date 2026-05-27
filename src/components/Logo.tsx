@@ -18,9 +18,9 @@ const Logo: React.FC<LogoProps> = ({
   tagline = false,
   variant = 'default',
 }) => {
-  const dark = variant === 'mono' ? '#FFFFFF' : '#0D2B45';
-  const mint = variant === 'mono' ? '#FFFFFF' : '#22B6A8';
-  const coral = variant === 'mono' ? '#FFFFFF' : '#FF8B8B';
+  const dark = variant === 'mono' ? '#FFFFFF' : '#1B3A4B';
+  const mint = variant === 'mono' ? '#FFFFFF' : '#0B7A6E';
+  const coral = variant === 'mono' ? '#FFFFFF' : '#C9707A';
 
   return (
     <div className="brand" style={{ gap: withWordmark ? '0.6rem' : 0 }}>

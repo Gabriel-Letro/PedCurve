@@ -28,7 +28,7 @@ const Login: React.FC = () => {
           >
             <ArrowLeft size={18} /> Voltar
           </button>
-          <ThemeToggle />
+          <ThemeToggle className="theme-toggle-light" />
         </div>
 
         <div className="text-center mb-6">

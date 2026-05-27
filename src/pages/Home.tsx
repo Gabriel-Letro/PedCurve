@@ -8,20 +8,21 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
 const CURVE_HIGHLIGHTS = [
-  { icon: <Baby size={18} />,          label: 'OMS 0–19 anos',        sub: 'Score Z',   color: '#22B6A8' },
+  { icon: <Baby size={18} />,          label: 'OMS 0–19 anos',        sub: 'Score Z',   color: '#0B7A6E' },
   { icon: <Heart size={18} />,         label: 'Síndrome de Down',     sub: 'Percentil', color: '#7C3AED' },
   { icon: <Brain size={18} />,         label: 'Prematuros',           sub: 'Fenton / Intergrowth', color: '#0EA5E9' },
-  { icon: <AlertTriangle size={18} />, label: 'Turner / Williams',    sub: 'Percentil', color: '#F59E0B' },
+  { icon: <AlertTriangle size={18} />, label: 'Turner / Williams',    sub: 'Percentil', color: '#B45309' },
 ];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
   return (
+    <div className="auth-page">
     <div className="home-page">
       {/* Top-right theme toggle */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-        <ThemeToggle />
+        <ThemeToggle className="theme-toggle-light" />
       </div>
 
       {/* Hero */}
@@ -81,6 +82,7 @@ const Home: React.FC = () => {
         <Feature icon={<Shield size={20} />} label="Curvas validadas" desc="OMS, Fenton, Mustacchi, Turner, Williams-Beuren" />
         <Feature icon={<Baby size={20} />} label="Populações especiais" desc="Prematuros, síndromes e acondroplasia" />
       </div>
+    </div>
     </div>
   );
 };

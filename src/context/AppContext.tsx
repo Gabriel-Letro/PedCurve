@@ -14,6 +14,7 @@ export interface Consultation {
   weight?: number;
   height?: number;
   headCirc?: number;
+  notes?: string;
 }
 
 export interface Patient {
@@ -52,23 +53,25 @@ const LOCAL_STORAGE_KEY = '@PedCurve:patients';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [patients, setPatients] = useState<Patient[]>(() => {
+    let stored: Patient[] = [];
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed as Patient[];
-        throw new Error('Formato inválido no armazenamento local.');
+        if (Array.isArray(parsed)) {
+          stored = parsed as Patient[];
+        } else {
+          throw new Error('Formato inválido no armazenamento local.');
+        }
       }
     } catch (err) {
       console.error('PedCurve: dados corrompidos no localStorage, reiniciando.', err);
-      try {
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
-      } catch {
-        /* ignore */
-      }
-      return [];
+      try { localStorage.removeItem(LOCAL_STORAGE_KEY); } catch { /* ignore */ }
     }
-    return seedPatients;
+    // Always ensure seed patients are present (re-insert any that were removed).
+    const storedIds = new Set(stored.map((p) => p.id));
+    const missingSeed = seedPatients.filter((p) => !storedIds.has(p.id));
+    return [...missingSeed, ...stored];
   });
 
   useEffect(() => {

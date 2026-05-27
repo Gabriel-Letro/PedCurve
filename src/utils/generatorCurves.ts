@@ -150,7 +150,7 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
   },
   {
     key: 'achondro',
-    patientTypes: ['normal', 'williams', 'turner'],
+    patientTypes: ['achondro'],
     name: 'Acondroplasia — Curvas Clarity (Horton)',
     shortName: 'Acondroplasia',
     description: 'Curvas de crescimento específicas para crianças com Acondroplasia.',
