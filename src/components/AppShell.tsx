@@ -7,11 +7,11 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-const StethoscopeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
-    <circle cx="20" cy="10" r="2" />
+const CurveMarkIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <path d="M4 19 C 8 18, 11 14, 14 11 S 19 6, 21 5" stroke="#F6F2E8" strokeWidth="2.2" strokeLinecap="round" />
+    <circle cx="8" cy="16.5" r="1.4" fill="#F6F2E8" />
+    <circle cx="15" cy="10" r="1.4" fill="#F6F2E8" />
   </svg>
 );
 
@@ -44,10 +44,10 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {/* Logo */}
         <div className="sidebar-logo-section">
           <div className="sidebar-logo-icon">
-            <StethoscopeIcon />
+            <CurveMarkIcon />
           </div>
           <div className="sidebar-logo-text">
-            <span className="sidebar-logo-name">PedCurve</span>
+            <span className="sidebar-logo-name">Ped<span className="accent">Curve</span></span>
             <span className="sidebar-logo-sub">Curvas de crescimento</span>
           </div>
         </div>

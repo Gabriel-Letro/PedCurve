@@ -16,8 +16,10 @@ interface Props {
 }
 
 // Fixed render size so Recharts always produces real SVG inside the
-// (screen-hidden) print container.
-const CHART = { width: 680, height: 340 };
+// (screen-hidden) print container. Largura limitada para caber na área útil
+// de uma A4 retrato (~688px): 620 + padding(48) + borda(2) = 670px < 688px,
+// evitando que o lado direito do gráfico (rótulos Z+3/P97) seja cortado.
+const CHART = { width: 620, height: 320 };
 
 /**
  * Printer/PDF-friendly report. Rendered inside a `.print-report` wrapper that
@@ -73,7 +75,13 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
       )
     : null;
 
-  const zRow = (label: string, r?: { value: number | null; message: string }) => (
+  const STATUS_COLORS: Record<string, React.CSSProperties> = {
+    normal:  { color: '#2E7D4F', background: '#E4F1E7', padding: '2px 7px', borderRadius: 4, fontWeight: 600, display: 'inline-block' },
+    warning: { color: '#B45309', background: '#FCEEDC', padding: '2px 7px', borderRadius: 4, fontWeight: 600, display: 'inline-block' },
+    danger:  { color: '#B3362B', background: '#FAE4E0', padding: '2px 7px', borderRadius: 4, fontWeight: 600, display: 'inline-block' },
+  };
+
+  const zRow = (label: string, r?: { value: number | null; status?: string; message: string }) => (
     <tr>
       <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee' }}>{label}</td>
       <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee', fontWeight: 700 }}>
@@ -83,7 +91,9 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
         {r && r.value !== null ? `P${zToPercentile(r.value)}` : '—'}
       </td>
       <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee' }}>
-        {r ? r.message : '—'}
+        <span style={r?.status && STATUS_COLORS[r.status] ? STATUS_COLORS[r.status] : { color: '#6B6860' }}>
+          {r ? r.message : '—'}
+        </span>
       </td>
     </tr>
   );
@@ -147,22 +157,22 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
         <>
           {wfaDs && (
             <div className="print-section">
-              <GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={weightData} isGirl={isGirl} staticSize={CHART} />
+              <GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={weightData} isGirl={isGirl} staticSize={CHART} forceLight />
             </div>
           )}
           {lhfaDs && (
             <div className="print-section">
-              <GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={heightData} isGirl={isGirl} staticSize={CHART} />
+              <GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={heightData} isGirl={isGirl} staticSize={CHART} forceLight />
             </div>
           )}
           {bmiDs && (
             <div className="print-section">
-              <GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={bmiData} isGirl={isGirl} staticSize={CHART} />
+              <GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={bmiData} isGirl={isGirl} staticSize={CHART} forceLight />
             </div>
           )}
           {hcDs && (
             <div className="print-section">
-              <GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={headData} isGirl={isGirl} staticSize={CHART} />
+              <GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={headData} isGirl={isGirl} staticSize={CHART} forceLight />
             </div>
           )}
         </>
@@ -179,6 +189,7 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
               <th style={{ padding: '6px 8px' }}>Peso (kg)</th>
               <th style={{ padding: '6px 8px' }}>Estatura (cm)</th>
               <th style={{ padding: '6px 8px' }}>PC (cm)</th>
+              <th style={{ padding: '6px 8px' }}>Observações</th>
             </tr>
           </thead>
           <tbody>
@@ -191,6 +202,9 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
                 <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee' }}>{c.weight ?? '—'}</td>
                 <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee' }}>{c.height ?? '—'}</td>
                 <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee' }}>{c.headCirc ?? '—'}</td>
+                <td style={{ padding: '6px 8px', borderBottom: '1px solid #eee', fontSize: 11, color: '#555', maxWidth: 160 }}>
+                  {c.notes ?? '—'}
+                </td>
               </tr>
             ))}
           </tbody>

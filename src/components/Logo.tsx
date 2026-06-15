@@ -8,9 +8,8 @@ interface LogoProps {
 }
 
 /**
- * PedCurve brand logo.
- * Inspired by the brand sheet: a stylised "P" whose tail morphs into a
- * rising growth-curve line with a coral data point at its tip.
+ * PedCurve brand logo — selo arredondado verde-pinho com uma curva de
+ * crescimento ascendente e pontos de medição (protótipo v1.0).
  */
 const Logo: React.FC<LogoProps> = ({
   size = 40,
@@ -18,49 +17,48 @@ const Logo: React.FC<LogoProps> = ({
   tagline = false,
   variant = 'default',
 }) => {
-  const dark = variant === 'mono' ? '#FFFFFF' : '#1B3A4B';
-  const mint = variant === 'mono' ? '#FFFFFF' : '#0B7A6E';
-  const coral = variant === 'mono' ? '#FFFFFF' : '#C9707A';
+  const mono = variant === 'mono';
+  const sealBg = mono ? 'rgba(246,242,232,0.12)' : 'var(--color-primary, #14524A)';
+  const stroke = '#F6F2E8';
 
   return (
     <div className="brand" style={{ gap: withWordmark ? '0.6rem' : 0 }}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 64 64"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="PedCurve logo"
+      <span
+        className={`brand-mark${mono ? ' on-dark' : ''}`}
+        style={{ width: size, height: size, background: sealBg, borderRadius: size * 0.29 }}
       >
-        {/* Stem of the P */}
-        <rect x="10" y="8" width="7" height="48" rx="3.5" fill={dark} />
-        {/* Bowl of the P */}
-        <path
-          d="M17 12 H32 a14 14 0 0 1 0 28 H17 Z"
+        <svg
+          width={size * 0.58}
+          height={size * 0.58}
+          viewBox="0 0 24 24"
           fill="none"
-          stroke={dark}
-          strokeWidth="7"
-          strokeLinejoin="round"
-        />
-        {/* Rising growth curve coming out of the P tail */}
-        <path
-          d="M17 50 Q 28 50, 34 42 Q 42 32, 52 22"
-          fill="none"
-          stroke={mint}
-          strokeWidth="4.5"
-          strokeLinecap="round"
-        />
-        {/* Data point */}
-        <circle cx="52" cy="22" r="4.5" fill={coral} />
-      </svg>
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="PedCurve logo"
+        >
+          <path
+            d="M4 19 C 8 18, 11 14, 14 11 S 19 6, 21 5"
+            stroke={stroke}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <circle cx="8" cy="16.5" r="1.4" fill={stroke} />
+          <circle cx="15" cy="10" r="1.4" fill={stroke} />
+        </svg>
+      </span>
 
       {withWordmark && (
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
-          <span className="brand-text">
+          <span className="brand-text" style={mono ? { color: '#F6F2E8' } : undefined}>
             Ped<span className="accent">Curve</span>
           </span>
           {tagline && (
-            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>
-              Curvas inteligentes para a saúde infantil
+            <span
+              style={{
+                fontSize: '0.7rem',
+                color: mono ? 'rgba(246,242,232,0.6)' : 'var(--color-text-muted)',
+              }}
+            >
+              Toda curva conta uma história
             </span>
           )}
         </div>

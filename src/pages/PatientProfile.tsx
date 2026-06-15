@@ -559,7 +559,7 @@ const PatientProfile: React.FC = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-dark m-0 flex items-center gap-2">
-                <Baby size={18} style={{ color: isGirl ? '#c9707a' : 'var(--color-primary)' }} />
+                <Baby size={18} style={{ color: isGirl ? '#D96A4F' : 'var(--color-primary)' }} />
                 {patient.name}
               </h1>
               <p className="text-sm text-muted">
@@ -634,7 +634,7 @@ const PatientProfile: React.FC = () => {
           </button>
           <div>
             <div className="shell-topbar-title" style={{ fontSize: 14, gap: 6 }}>
-              <Baby size={15} style={{ color: isGirl ? '#c9707a' : 'var(--color-primary)' }} />
+              <Baby size={15} style={{ color: isGirl ? '#D96A4F' : 'var(--color-primary)' }} />
               {patient.name}
             </div>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)', marginTop: 1 }}>

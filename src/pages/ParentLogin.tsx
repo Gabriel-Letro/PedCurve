@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, KeyRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Heart } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const ParentLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -23,65 +24,78 @@ const ParentLogin: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh]">
-      <div className="w-full max-w-md card">
-        <button
-          onClick={() => navigate('/')}
-          className="btn btn-ghost"
-          style={{ background: 'transparent', padding: 0, marginBottom: '1.25rem' }}
-        >
-          <ArrowLeft size={18} /> Voltar
-        </button>
+    <div className="login-split">
+      <div className="login-side">
+        <Logo size={38} withWordmark variant="mono" />
+        <p className="login-quote">
+          Cada consulta vira um ponto. Cada ponto, um pedaço da{' '}
+          <em>história</em> do seu filho.
+        </p>
+        <p className="login-meta">
+          Acesso somente-leitura: você vê o crescimento registrado pelo
+          profissional de saúde, sem cadastro e sem senha.
+        </p>
+      </div>
 
-        <div className="text-center mb-6">
-          <div style={{ display: 'inline-flex' }}>
-            <Logo size={56} />
+      <div className="login-main">
+        <div className="login-box">
+          <div className="login-topbar">
+            <button className="login-back" onClick={() => navigate('/')}>
+              <ArrowLeft size={15} /> Voltar
+            </button>
+            <ThemeToggle className="theme-toggle-light" />
           </div>
-          <h2 className="text-2xl font-bold text-dark mt-3">Acesso dos Pais</h2>
-          <p className="text-muted text-sm mt-1">
-            Informe o código fornecido pelo profissional para visualizar o
-            desenvolvimento do seu filho(a).
+
+          <span className="login-area-chip coral">ÁREA DA FAMÍLIA</span>
+          <h2>Veja o crescimento do seu filho.</h2>
+          <p className="login-sub">
+            Digite o código que você recebeu na consulta — tipo{' '}
+            <b>HELENA1</b>.
+          </p>
+
+          <form onSubmit={handleLogin} className="flex flex-col gap-3">
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>Código de acesso</label>
+              <input
+                type="text"
+                placeholder="EX: A8F3K2"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value.toUpperCase());
+                  setError('');
+                }}
+                required
+                maxLength={10}
+                style={{
+                  textAlign: 'center',
+                  fontSize: '1.25rem',
+                  letterSpacing: '0.3em',
+                  fontWeight: 700,
+                  fontFamily: "ui-monospace, 'Cascadia Code', monospace",
+                }}
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-center" style={{ color: 'var(--color-danger-cl)' }}>
+                {error}
+              </p>
+            )}
+
+            <button type="submit" className="btn btn-coral w-full mt-4">
+              Ver o crescimento <ArrowRight size={16} />
+            </button>
+
+            <p className="text-xs text-muted text-center mt-2 flex items-center justify-center gap-1">
+              <Heart size={12} /> Acesso somente-leitura, sem edição de dados.
+            </p>
+          </form>
+
+          <p className="login-alt">
+            É profissional de saúde?{' '}
+            <button onClick={() => navigate('/login')}>Entre por aqui</button>
           </p>
         </div>
-
-        <form onSubmit={handleLogin} className="flex flex-col gap-3">
-          <div className="input-group" style={{ marginBottom: 0 }}>
-            <label>Código de Acesso</label>
-            <input
-              type="text"
-              placeholder="EX: A8F3K2"
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value.toUpperCase());
-                setError('');
-              }}
-              required
-              maxLength={10}
-              style={{
-                textAlign: 'center',
-                fontSize: '1.25rem',
-                letterSpacing: '0.3em',
-                fontWeight: 600,
-              }}
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-center" style={{ color: 'var(--color-accent)' }}>
-              {error}
-            </p>
-          )}
-
-          <button type="submit" className="btn btn-primary w-full mt-4">
-            <KeyRound size={18} /> Acessar Perfil
-          </button>
-
-          <p
-            className="text-xs text-muted text-center mt-2 flex items-center justify-center gap-1"
-          >
-            <Heart size={12} /> Acesso somente-leitura, sem edição de dados.
-          </p>
-        </form>
       </div>
     </div>
   );

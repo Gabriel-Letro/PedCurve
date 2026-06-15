@@ -30,7 +30,7 @@ const PATIENT_TYPES: { key: PatientType; label: string; sub: string; icon: React
     label: 'Paciente sem comorbidades',
     sub: 'Curvas OMS — Score Z',
     icon: <Baby size={28} />,
-    color: '#22B6A8',
+    color: '#14524A',
   },
   {
     key: 'down',
@@ -850,12 +850,12 @@ function PercentileChartComp({
 }) {
   const { theme } = useTheme();
   const isDark     = theme === 'dark';
-  const gridColor  = isDark ? '#243240' : '#f0f0f0';
-  const tickColor  = isDark ? '#8fa0ae' : '#6B7280';
-  const chartBg    = isDark ? '#1a2a35' : '#ffffff';
-  const tooltipBg  = isDark ? '#1e2d38' : '#ffffff';
-  const tooltipBdr = isDark ? '#2d3d4a' : '#E5E7EB';
-  const tooltipClr = isDark ? '#e2e8f0' : '#1B3A4B';
+  const gridColor  = isDark ? '#20382F' : '#EFE9DA';
+  const tickColor  = isDark ? '#84988C' : '#7E8A82';
+  const chartBg    = isDark ? '#152622' : '#FFFDF7';
+  const tooltipBg  = isDark ? '#1A2E29' : '#FFFDF7';
+  const tooltipBdr = isDark ? '#2B463D' : '#EBE5D4';
+  const tooltipClr = isDark ? '#EDE7D6' : '#22312E';
 
   const data = getPercentileChartData(curveKey, gender, indicator);
   if (!data || data.length === 0) return <div className="chart-no-data">Dados gráficos não disponíveis</div>;
@@ -888,11 +888,11 @@ function PercentileChartComp({
             labelFormatter={(l) => `Idade: ${l} meses`}
             contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBdr}`, borderRadius: 8, fontSize: 12, color: tooltipClr }}
           />
-          <Area dataKey="P3_P97"  name="P3–P97"  fill="#22B6A8" fillOpacity={0.07} stroke="none" />
-          <Area dataKey="P10_P90" name="P10–P90" fill="#22B6A8" fillOpacity={0.09} stroke="none" />
-          <Area dataKey="P25_P75" name="P25–P75" fill="#22B6A8" fillOpacity={0.12} stroke="none" />
-          <Line dataKey="P50" name="P50 (mediana)" stroke="#22B6A8" strokeWidth={2} dot={false} />
-          <ReferenceDot x={age} y={patientValue} r={7} fill="#FF8B8B" stroke="#fff" strokeWidth={2} />
+          <Area dataKey="P3_P97"  name="P3–P97"  fill="#14524A" fillOpacity={0.07} stroke="none" />
+          <Area dataKey="P10_P90" name="P10–P90" fill="#14524A" fillOpacity={0.09} stroke="none" />
+          <Area dataKey="P25_P75" name="P25–P75" fill="#14524A" fillOpacity={0.12} stroke="none" />
+          <Line dataKey="P50" name="P50 (mediana)" stroke="#14524A" strokeWidth={2} dot={false} />
+          <ReferenceDot x={age} y={patientValue} r={7} fill="#D96A4F" stroke="#fff" strokeWidth={2} />
         </ComposedChart>
       </ResponsiveContainer>
       <p className="chart-legend-note" style={{ color: tickColor }}>Faixa: P3–P97 · Linha central: P50 (mediana) · Ponto vermelho: paciente</p>
@@ -907,12 +907,12 @@ function FentonChart({
 }) {
   const { theme } = useTheme();
   const isDark     = theme === 'dark';
-  const gridColor  = isDark ? '#243240' : '#f0f0f0';
-  const tickColor  = isDark ? '#8fa0ae' : '#6B7280';
-  const chartBg    = isDark ? '#1a2a35' : '#ffffff';
-  const tooltipBg  = isDark ? '#1e2d38' : '#ffffff';
-  const tooltipBdr = isDark ? '#2d3d4a' : '#E5E7EB';
-  const tooltipClr = isDark ? '#e2e8f0' : '#1B3A4B';
+  const gridColor  = isDark ? '#20382F' : '#EFE9DA';
+  const tickColor  = isDark ? '#84988C' : '#7E8A82';
+  const chartBg    = isDark ? '#152622' : '#FFFDF7';
+  const tooltipBg  = isDark ? '#1A2E29' : '#FFFDF7';
+  const tooltipBdr = isDark ? '#2B463D' : '#EBE5D4';
+  const tooltipClr = isDark ? '#EDE7D6' : '#22312E';
 
   const data = getFentonChartData(gender, indicator);
   const unit = INDICATOR_UNITS[indicator];
@@ -940,7 +940,7 @@ function FentonChart({
           <Area dataKey="P3_P97"  name="P3–P97"  fill="#0EA5E9" fillOpacity={0.07} stroke="none" />
           <Area dataKey="P10_P90" name="P10–P90" fill="#0EA5E9" fillOpacity={0.12} stroke="none" />
           <Line dataKey="P50" name="P50 (mediana)" stroke="#0EA5E9" strokeWidth={2} dot={false} />
-          <ReferenceDot x={week} y={patientValue} r={7} fill="#FF8B8B" stroke="#fff" strokeWidth={2} />
+          <ReferenceDot x={week} y={patientValue} r={7} fill="#D96A4F" stroke="#fff" strokeWidth={2} />
         </ComposedChart>
       </ResponsiveContainer>
       <p className="chart-legend-note" style={{ color: tickColor }}>Fenton 2013 · Faixa: P3–P97 · Ponto vermelho: paciente</p>

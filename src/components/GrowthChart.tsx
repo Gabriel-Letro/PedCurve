@@ -29,19 +29,22 @@ interface GrowthChartProps {
   caption?: string;
   staticSize?: { width: number; height: number };
   displayMode?: ChartDisplayMode;
+  forceLight?: boolean;
 }
 
 function useChartColors(isDark: boolean) {
   return {
-    cardBg:        isDark ? '#1a2a35' : '#FFFFFF',
-    border:        isDark ? '#2d3d4a' : '#E5DFD5',
-    grid:          isDark ? '#243240' : '#E5E7EB',
-    label:         isDark ? '#8fa0ae' : '#6B7280',
-    title:         isDark ? '#e2e8f0' : '#1B3A4B',
-    muted:         isDark ? '#5c7080' : '#9CA3AF',
-    tooltip:       isDark ? '#1e2d38' : '#FFFFFF',
-    tooltipBorder: isDark ? '#2d3d4a' : '#E5E7EB',
-    noData:        isDark ? '#5c7080' : '#9CA3AF',
+    cardBg:        isDark ? '#152622' : '#FFFDF7',
+    border:        isDark ? '#2B463D' : '#EBE5D4',
+    grid:          isDark ? '#20382F' : '#EBE5D4',
+    label:         isDark ? '#84988C' : '#7E8A82',
+    title:         isDark ? '#EDE7D6' : '#22312E',
+    muted:         isDark ? '#5E7E72' : '#A8A294',
+    tooltip:       isDark ? '#1A2E29' : '#FFFDF7',
+    tooltipBorder: isDark ? '#2B463D' : '#EBE5D4',
+    noData:        isDark ? '#5E7E72' : '#A8A294',
+    refLine:       isDark ? '#6FA897' : '#14524A',
+    patient:       '#D96A4F',
   };
 }
 
@@ -89,9 +92,13 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
   caption,
   staticSize,
   displayMode = 'zscore',
+  forceLight = false,
 }) => {
   const { theme } = useTheme();
-  const C = useChartColors(theme === 'dark');
+  const C = useChartColors(!forceLight && theme === 'dark');
+  // No PDF (forceLight) usamos fundo branco puro em vez do creme, deixando o
+  // gráfico mais claro e legível na impressão.
+  if (forceLight) C.cardBg = '#FFFFFF';
 
   const { mergedData, zColor, hasLMS } = useMemo(() => {
     const refByMonth: Record<number, any> = {};
@@ -148,8 +155,8 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
     }
 
     const merged = Object.values(refByMonth).sort((a: any, b: any) => a.month - b.month);
-    return { mergedData: merged, zColor: isGirl ? '#f472b6' : '#38bdf8', hasLMS: lmsFound };
-  }, [referenceData, patientData, isGirl]);
+    return { mergedData: merged, zColor: C.refLine, hasLMS: lmsFound };
+  }, [referenceData, patientData, isGirl, C.refLine]);
 
   const unit = yAxisLabel.includes('(')
     ? yAxisLabel.split('(')[1]?.replace(')', '')
@@ -253,9 +260,9 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
           name="Paciente"
           type="monotone"
           dataKey="patient"
-          stroke="#FF8B8B"
-          strokeWidth={2.5}
-          dot={{ r: 5, fill: '#FF8B8B', stroke: 'white', strokeWidth: 1.5 }}
+          stroke={C.patient}
+          strokeWidth={2.6}
+          dot={{ r: 5, fill: C.patient, stroke: C.cardBg, strokeWidth: 1.5 }}
           connectNulls
           isAnimationActive={false}
         />
@@ -265,12 +272,16 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
 
   return (
     <div
+      className="growth-chart-card"
       style={{
         background: C.cardBg,
-        borderRadius: 14,
+        // No PDF (forceLight) usamos cantos retos e sem sombra: o Chrome rasteriza
+        // o card do gráfico (por causa do SVG) como JPEG, que não tem transparência —
+        // cantos arredondados/transparentes acabariam virando preto no PDF.
+        borderRadius: forceLight ? 0 : 14,
         padding: '1.5rem',
         border: `1px solid ${C.border}`,
-        boxShadow: '0 1px 2px 0 rgba(27,58,75,0.07)',
+        boxShadow: forceLight ? 'none' : '0 1px 2px 0 rgba(34,49,46,0.06)',
         width: '100%',
       }}
     >
