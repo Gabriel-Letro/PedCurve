@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, NavLink } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { Users, TrendingUp, LogOut, Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -17,7 +17,6 @@ const CurveMarkIcon = () => (
 
 const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const navigate = useNavigate();
-  useLocation();
   const { theme, toggle } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 900);

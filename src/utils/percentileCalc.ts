@@ -33,35 +33,6 @@ export function interpolatePercentile(data: PercentileRow[], age: number): Perce
   };
 }
 
-export function calcPercentilePosition(value: number, row: PercentileRow): number {
-  const bands: [number, number, number][] = [
-    [row.P3,  row.P10, 3],
-    [row.P10, row.P25, 10],
-    [row.P25, row.P50, 25],
-    [row.P50, row.P75, 50],
-    [row.P75, row.P90, 75],
-    [row.P90, row.P97, 90],
-  ];
-
-  if (value <= row.P3) {
-    const frac = (value - (row.P3 * 0.7)) / (row.P3 * 0.3);
-    return Math.max(0.1, frac * 3);
-  }
-  if (value >= row.P97) {
-    const excess = (value - row.P97) / (row.P97 - row.P90) * 3;
-    return Math.min(99.9, 97 + excess);
-  }
-
-  for (const [lo, hi, loP] of bands) {
-    if (value >= lo && value <= hi) {
-      const t = (value - lo) / (hi - lo);
-      const nextP = { 3:10, 10:25, 25:50, 50:75, 75:90, 90:97 }[loP as 3|10|25|50|75|90] ?? 97;
-      return loP + t * (nextP - loP);
-    }
-  }
-  return 50;
-}
-
 export function calcPercentileFromRow(value: number, row: PercentileRow): number {
   if (value <= row.P3)  return 3 * (value / row.P3);
   if (value >= row.P97) return Math.min(99.9, 97 + 2.9 * ((value - row.P97) / (row.P97 - row.P90)));

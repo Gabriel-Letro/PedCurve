@@ -399,10 +399,10 @@ const PatientProfile: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-6">
-              {wfaDs && <div className="print:break-inside-avoid"><GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={chartDataWeight} isGirl={isGirl} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
-              {lhfaDs && <div className="print:break-inside-avoid"><GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={chartDataHeight} isGirl={isGirl} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
-              {bmiDs && <div className="print:break-inside-avoid"><GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={chartDataBMI} isGirl={isGirl} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
-              {hcDs && <div className="print:break-inside-avoid"><GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={chartDataHead} isGirl={isGirl} caption="OMS • 0 a 5 anos" displayMode={chartDisplayMode} /></div>}
+              {wfaDs && <div className="print:break-inside-avoid"><GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={chartDataWeight} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
+              {lhfaDs && <div className="print:break-inside-avoid"><GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={chartDataHeight} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
+              {bmiDs && <div className="print:break-inside-avoid"><GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={chartDataBMI} caption={`Padrão ${STANDARD_LABELS[standard]} • ${patient.gender === 'M' ? 'meninos' : 'meninas'}`} displayMode={chartDisplayMode} /></div>}
+              {hcDs && <div className="print:break-inside-avoid"><GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={chartDataHead} caption="OMS • 0 a 5 anos" displayMode={chartDisplayMode} /></div>}
             </div>
           </>
         )}

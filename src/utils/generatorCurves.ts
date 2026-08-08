@@ -56,7 +56,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['weight', 'height', 'headCirc', 'bmi'],
     reference: 'WHO Multicentre Growth Reference Study Group. WHO Child Growth Standards. Geneva: WHO, 2006.',
-    referenceShort: 'OMS 2006',
   },
   {
     key: 'who_5_19',
@@ -71,7 +70,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['weight', 'height', 'bmi'],
     reference: 'de Onis M, et al. Development of a WHO growth reference for school-aged children and adolescents. Bull World Health Organ. 2007;85(9):660-7.',
-    referenceShort: 'OMS 2007',
   },
   {
     key: 'down_brazil',
@@ -86,7 +84,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['weight', 'height', 'headCirc'],
     reference: 'Mustacchi Z. Curvas de crescimento de portadores de Síndrome de Down. Cid Editora, São Paulo, 2002; Nalin T, Perry IDS, Refosco LM. Síndrome de Down e condições associadas. Editora da UFRGS, 2011.',
-    referenceShort: 'Mustacchi 2002 / Nalin 2011',
   },
   {
     key: 'fenton',
@@ -101,7 +98,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['weight', 'height', 'headCirc'],
     reference: 'Fenton TR, Kim JH. A systematic review and meta-analysis to revise the Fenton growth chart for preterm infants. BMC Pediatrics. 2013;13:59.',
-    referenceShort: 'Fenton 2013',
   },
   {
     key: 'intergrowth',
@@ -116,7 +112,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['weight', 'height', 'headCirc'],
     reference: 'Villar J, et al. INTERGROWTH-21st very preterm size at birth reference charts. Lancet. 2016;387(10021):844-5. Papageorghiou AT, et al. The INTERGROWTH-21st fetal growth standards. BJOG. 2021.',
-    referenceShort: 'Intergrowth-21 2016',
   },
   {
     key: 'turner',
@@ -131,7 +126,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['F'],
     availableIndicators: ['height'],
     reference: 'Ranke MB, et al. Standards for growth and final height in Turner\'s syndrome. Acta Paediatr Scand. 1983;72:879-881. Naeraa RW, Nielsen J. Standards for growth in Turner\'s syndrome. Acta Paediatr Scand. 1990;79:182-190.',
-    referenceShort: 'Ranke 1983 / Naeraa 1990',
   },
   {
     key: 'williams',
@@ -146,7 +140,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['height'],
     reference: 'Morris CA, et al. Natural history of Williams syndrome: physical characteristics. J Pediatr. 1988;113(2):318-26. Pankau R, et al. Statural growth in Williams-Beuren syndrome. Pediatrics. 1992;113(2):318-26.',
-    referenceShort: 'Morris 1988 / Pankau 1992',
   },
   {
     key: 'achondro',
@@ -161,7 +154,6 @@ export const CURVE_DEFINITIONS: CurveDefinition[] = [
     availableGenders: ['M', 'F'],
     availableIndicators: ['height'],
     reference: 'Horton WA, et al. Standard growth curves for achondroplasia. J Pediatr. 1978;93(3):435-8. Hoover-Fong J, et al. Age-appropriate body mass index in children with achondroplasia: suggestions for clinical practice. Am J Med Genet. 2007.',
-    referenceShort: 'Horton 1978 / Clarity',
   },
 ];
 
@@ -492,21 +484,4 @@ export function getFentonChartData(
     P90: r[`${prefix}_P90` as keyof FentonRow] as number,
     P97: r[`${prefix}_P97` as keyof FentonRow] as number,
   }));
-}
-
-export function getWHOChartData(
-  gender: Gender,
-  indicator: Indicator,
-  ageMonths: number
-): { age: number; SD3neg: number; SD2neg: number; SD0: number; SD2: number; SD3: number }[] {
-  const data = getWHOData(gender, indicator, ageMonths);
-  if (!data) return [];
-  return data.map((row) => ({
-    age: Number(row.Month ?? row.Agemos),
-    SD3neg: Number(row['SD3neg'] ?? 0),
-    SD2neg: Number(row['SD2neg'] ?? 0),
-    SD0:    Number(row['SD0']    ?? 0),
-    SD2:    Number(row['SD2']    ?? 0),
-    SD3:    Number(row['SD3']    ?? 0),
-  })).filter((r) => !isNaN(r.age));
 }

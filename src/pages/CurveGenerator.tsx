@@ -824,7 +824,6 @@ function IndicatorChart({
         yAxisLabel={ds.yAxisLabel}
         referenceData={ds.data}
         patientData={patientPt}
-        isGirl={result.gender === 'F'}
         caption={caption}
         displayMode={displayMode}
       />
@@ -1031,7 +1030,6 @@ export default function CurveGenerator() {
         gestationalAgeWeeks: gestWeeks,
         indicators,
         reference: selectedCurve.reference,
-        referenceShort: selectedCurve.referenceShort,
         generatedAt: new Date().toLocaleString('pt-BR'),
       });
       setStep(3);

@@ -25,7 +25,6 @@ interface GrowthChartProps {
   referenceData: ReferenceRow[];
   patientData: PatientDataPoint[];
   yAxisLabel: string;
-  isGirl?: boolean;
   caption?: string;
   staticSize?: { width: number; height: number };
   displayMode?: ChartDisplayMode;
@@ -88,7 +87,6 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
   referenceData,
   patientData,
   yAxisLabel,
-  isGirl = false,
   caption,
   staticSize,
   displayMode = 'zscore',
@@ -156,7 +154,7 @@ const GrowthChart: React.FC<GrowthChartProps> = ({
 
     const merged = Object.values(refByMonth).sort((a: any, b: any) => a.month - b.month);
     return { mergedData: merged, zColor: C.refLine, hasLMS: lmsFound };
-  }, [referenceData, patientData, isGirl, C.refLine]);
+  }, [referenceData, patientData, C.refLine]);
 
   const unit = yAxisLabel.includes('(')
     ? yAxisLabel.split('(')[1]?.replace(')', '')

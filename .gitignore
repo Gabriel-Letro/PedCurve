@@ -23,6 +23,8 @@ dist-ssr
 
 # Claude Code local settings
 .claude/
+.agents/
+skills-lock.json
 *.suo
 *.ntvs*
 *.njsproj

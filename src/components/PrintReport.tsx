@@ -27,7 +27,6 @@ const CHART = { width: 620, height: 320 };
  * pixel size (no ResponsiveContainer) so they render correctly in the PDF.
  */
 const PrintReport: React.FC<Props> = ({ patient, standard }) => {
-  const isGirl = patient.gender === 'F';
   const ageAt = (date: string) =>
     differenceInMonths(parseISO(date), parseISO(patient.birthDate));
 
@@ -157,22 +156,22 @@ const PrintReport: React.FC<Props> = ({ patient, standard }) => {
         <>
           {wfaDs && (
             <div className="print-section">
-              <GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={weightData} isGirl={isGirl} staticSize={CHART} forceLight />
+              <GrowthChart title={wfaDs.title} yAxisLabel={wfaDs.yAxisLabel} referenceData={wfaDs.data} patientData={weightData} staticSize={CHART} forceLight />
             </div>
           )}
           {lhfaDs && (
             <div className="print-section">
-              <GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={heightData} isGirl={isGirl} staticSize={CHART} forceLight />
+              <GrowthChart title={lhfaDs.title} yAxisLabel={lhfaDs.yAxisLabel} referenceData={lhfaDs.data} patientData={heightData} staticSize={CHART} forceLight />
             </div>
           )}
           {bmiDs && (
             <div className="print-section">
-              <GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={bmiData} isGirl={isGirl} staticSize={CHART} forceLight />
+              <GrowthChart title={bmiDs.title} yAxisLabel={bmiDs.yAxisLabel} referenceData={bmiDs.data} patientData={bmiData} staticSize={CHART} forceLight />
             </div>
           )}
           {hcDs && (
             <div className="print-section">
-              <GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={headData} isGirl={isGirl} staticSize={CHART} forceLight />
+              <GrowthChart title={hcDs.title} yAxisLabel={hcDs.yAxisLabel} referenceData={hcDs.data} patientData={headData} staticSize={CHART} forceLight />
             </div>
           )}
         </>

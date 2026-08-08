@@ -49,7 +49,6 @@ export interface CurveDefinition {
   availableGenders: Gender[];
   availableIndicators: Indicator[];
   reference: string;
-  referenceShort: string;
 }
 
 export interface GeneratorFormData {
@@ -105,6 +104,5 @@ export interface GeneratorResult {
   gestationalAgeWeeks?: number;
   indicators: IndicatorResult[];
   reference: string;
-  referenceShort: string;
   generatedAt: string;
 }

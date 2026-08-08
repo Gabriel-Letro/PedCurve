@@ -39,11 +39,7 @@ export type Indicator = 'weight' | 'height' | 'bmi' | 'headCirc';
 
 export type StandardKey =
   | 'who'         // WHO 0-5 (default for kids under 5y)
-  | 'cdc'         // CDC 2-20 (default for >=5y)
-  | 'down'        // Down Syndrome (future)
-  | 'tanner'      // Tanner stages (future, separate flow)
-  | 'achondro'    // Achondroplasia / Dwarfism (future)
-  | 'fenton';     // Fenton premature (future)
+  | 'cdc';        // CDC 2-20 (default for >=5y)
 
 export interface ReferenceRow {
   // Source JSON stores numeric fields as strings; consumers coerce via Number().
@@ -201,11 +197,6 @@ const STANDARDS: Record<StandardKey, Partial<Record<Indicator, Record<Gender, Cu
       },
     },
   },
-  // Placeholders – populate once the corresponding JSON datasets are added.
-  down:     { },
-  tanner:   { },
-  achondro: { },
-  fenton:   { },
 };
 
 /**
@@ -233,29 +224,9 @@ export function resolveStandard(
 export const STANDARD_LABELS: Record<StandardKey, string> = {
   who: 'OMS',
   cdc: 'CDC',
-  down: 'Síndrome de Down',
-  tanner: 'Tanner',
-  achondro: 'Acondroplasia',
-  fenton: 'Fenton (Prematuro)',
 };
 
-/**
- * True only if the standard has at least one indicator whose gender entry
- * points to a dataset with actual reference rows. Guards against partially
- * stubbed standards (e.g. `down: { weight: {} }`) showing up in the dropdown.
- */
-function hasUsableData(standard: StandardKey): boolean {
-  const byIndicator = STANDARDS[standard];
-  if (!byIndicator) return false;
-  return Object.values(byIndicator).some((byGender) => {
-    if (!byGender) return false;
-    return Object.values(byGender).some(
-      (ds) => !!ds && Array.isArray(ds.data) && ds.data.length > 0
-    );
-  });
-}
-
-/** All standards available in the UI (only ones with populated curve data). */
+/** All standards available in the UI. */
 export function availableStandards(): StandardKey[] {
-  return (Object.keys(STANDARDS) as StandardKey[]).filter(hasUsableData);
+  return Object.keys(STANDARDS) as StandardKey[];
 }
